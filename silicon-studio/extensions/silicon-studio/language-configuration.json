@@ -1,0 +1,35 @@
+{
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["/*", "*/"]
+  },
+  "brackets": [
+    ["(", ")"],
+    ["[", "]"],
+    ["{", "}"]
+  ],
+  "autoClosingPairs": [
+    { "open": "(", "close": ")", "notIn": ["string", "comment"] },
+    { "open": "[", "close": "]", "notIn": ["string", "comment"] },
+    { "open": "{", "close": "}", "notIn": ["string", "comment"] },
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "/*", "close": " */", "notIn": ["string", "comment"] }
+  ],
+  "surroundingPairs": [
+    ["(", ")"],
+    ["[", "]"],
+    ["{", "}"],
+    ["\"", "\""]
+  ],
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|(\\d*'[sS]?[bBoOdDhH][0-9a-fA-FxXzZ?_]+)|([`$]?[A-Za-z_][\\w$]*)|(\\\\[^\\s]+)",
+  "folding": {
+    "markers": {
+      "start": "^(?!\\s*end\\b).*\\bbegin(?:\\s*:\\s*[\\w$]+)?\\s*(?:\\/\\/.*)?$|^\\s*(?:virtual\\s+)?class\\b|^\\s*(?:module|macromodule|interface|package|program|generate|(?:(?:unique0?|priority)\\s+)?case[xz]?|randcase)\\b|^\\s*(?:(?:virtual|static|automatic|protected|local)\\s+)*(?:function|task)\\b|^\\s*fork(?:\\s*:\\s*[\\w$]+)?\\s*(?:\\/\\/.*)?$|^\\s*`(?:ifdef|ifndef)\\b|^\\s*\\/\\/\\s*#?region\\b",
+      "end": "^\\s*(?:end\\b(?!.*\\bbegin(?:\\s*:\\s*[\\w$]+)?\\s*(?:\\/\\/.*)?$)|end(?:module|interface|package|program|class|function|task|generate|case)\\b|join(?:_any|_none)?\\b|`endif\\b|\\/\\/\\s*#?endregion\\b)"
+    }
+  },
+  "indentationRules": {
+    "increaseIndentPattern": "\\bbegin(?:\\s*:\\s*[\\w$]+)?\\s*(?:\\/\\/.*)?$|^\\s*(?:virtual\\s+)?class\\b|^\\s*(?:module|macromodule|interface|package|program|generate|(?:(?:unique0?|priority)\\s+)?case[xz]?|randcase|fork|covergroup|clocking|property|sequence|specify|primitive)\\b|^\\s*(?:(?:virtual|static|automatic|protected|local)\\s+)*(?:function|task)\\b|^\\s*`(?:ifdef|ifndef|else|elsif)\\b",
+    "decreaseIndentPattern": "^\\s*(?:end(?:module|interface|package|program|class|function|task|generate|case|group|clocking|property|sequence|specify|primitive)?\\b|join(?:_any|_none)?\\b|`(?:else|elsif|endif)\\b)"
+  }
+}

@@ -1,0 +1,77 @@
+html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+body {
+  background: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+}
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+.wf-toolbar {
+  flex: none; display: flex; align-items: center; gap: 4px; padding: 4px 6px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+.wf-btn {
+  min-width: 26px; padding: 2px 8px; border: none; border-radius: 2px; cursor: pointer; font: inherit;
+  background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);
+}
+.wf-btn:hover { background: var(--vscode-button-secondaryHoverBackground); }
+.wf-select {
+  font: inherit; padding: 1px 2px;
+  background: var(--vscode-dropdown-background); color: var(--vscode-dropdown-foreground);
+  border: 1px solid var(--vscode-dropdown-border);
+}
+.wf-btn:focus-visible, .wf-select:focus, .wf-filter:focus, .wf-wave canvas:focus-visible,
+.wf-radix:focus-visible, .wf-rm:focus-visible, .wf-sig input:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px;
+}
+.wf-info {
+  margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: pre;
+  font-family: var(--vscode-editor-font-family);
+}
+
+.wf-main { flex: 1; display: flex; min-height: 0; }
+.wf-side, .wf-names {
+  flex: none; display: flex; flex-direction: column; min-width: 120px; max-width: 60vw;
+  overflow: hidden; resize: horizontal; border-right: 1px solid var(--vscode-panel-border);
+}
+.wf-side { width: 230px; }
+.wf-names { width: 230px; }
+.wf-filter {
+  margin: 4px; padding: 3px 4px; font: inherit;
+  background: var(--vscode-input-background); color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border, transparent);
+}
+.wf-filter::placeholder { color: var(--vscode-input-placeholderForeground); }
+.wf-tree { flex: 1; overflow: auto; }
+.wf-row { display: flex; align-items: center; gap: 4px; height: 22px; padding-right: 6px; white-space: nowrap; cursor: pointer; user-select: none; }
+.wf-row:hover, .wf-trace:hover { background: var(--vscode-list-hoverBackground); }
+.wf-sig input { margin: 0; accent-color: var(--vscode-focusBorder); }
+.wf-dim { opacity: 0.65; }
+
+.wf-names-head {
+  flex: none; height: 26px; box-sizing: border-box; display: flex; align-items: center; gap: 4px; padding: 0 6px;
+  border-bottom: 1px solid var(--vscode-panel-border); opacity: 0.8;
+}
+.wf-list { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.wf-trace { display: flex; align-items: center; gap: 4px; height: 22px; box-sizing: border-box; padding: 0 2px 0 6px; cursor: pointer; }
+.wf-trace.sel { background: var(--vscode-list-activeSelectionBackground); color: var(--vscode-list-activeSelectionForeground); }
+.wf-tname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wf-tval {
+  max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--vscode-editor-font-family);
+}
+.wf-radix, .wf-rm {
+  flex: none; width: 18px; padding: 0; border: none; background: none; color: inherit; font: inherit;
+  cursor: pointer; opacity: 0.6;
+}
+.wf-radix:hover, .wf-rm:hover { opacity: 1; }
+.wf-radix:disabled { visibility: hidden; }
+
+.wf-wave { flex: 1; position: relative; min-width: 0; }
+.wf-wave canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; outline: none; }
+.wf-msg {
+  position: absolute; inset: 26px 0 0 0; display: flex; align-items: center; justify-content: center;
+  padding: 16px; text-align: center; opacity: 0.75; pointer-events: none;
+}
+.wf-msg[hidden] { display: none; }

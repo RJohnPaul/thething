@@ -1,0 +1,69 @@
+{
+	"name": "Tcl",
+	"scopeName": "source.tcl",
+	"comment": "Tcl / SDC grammar for Silicon Studio shell scripts (DC, ICC2, PrimeTime style).",
+	"patterns": [
+		{ "include": "#comment" },
+		{ "include": "#command" }
+	],
+	"repository": {
+		"comment": {
+			"match": "(?:^|(?<=;))\\s*(#.*)$",
+			"captures": { "1": { "name": "comment.line.number-sign.tcl" } }
+		},
+		"command": {
+			"patterns": [
+				{ "include": "#keyword" },
+				{ "include": "#string" },
+				{ "include": "#braces" },
+				{ "include": "#substitution" },
+				{ "include": "#variable" },
+				{ "include": "#option" },
+				{ "include": "#number" },
+				{ "include": "#command-name" }
+			]
+		},
+		"keyword": {
+			"match": "(?<![\\w$-])(proc|set|unset|if|then|else|elseif|for|foreach|while|switch|return|source|puts|expr|global|upvar|variable|namespace|catch|try|on|finally|error|break|continue|incr|append|lappend|list|llength|lindex|lsort|dict|array|string|regexp|regsub|format|eval|uplevel|info|exit|after|open|close|gets|file|glob)(?![\\w-])",
+			"name": "keyword.control.tcl"
+		},
+		"command-name": {
+			"match": "(?:^|(?<=[\\[;]))\\s*([A-Za-z_][\\w:]*)",
+			"captures": { "1": { "name": "entity.name.function.tcl" } }
+		},
+		"option": {
+			"match": "(?<![\\w$])-[A-Za-z_][\\w-]*",
+			"name": "variable.parameter.option.tcl"
+		},
+		"variable": {
+			"match": "\\$(?:\\{[^}]*\\}|(?:::)?[A-Za-z_][\\w:]*(?:\\([^)]*\\))?)",
+			"name": "variable.other.tcl"
+		},
+		"number": {
+			"match": "(?<![\\w.$-])-?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][+-]?\\d+)?(?![\\w.])",
+			"name": "constant.numeric.tcl"
+		},
+		"string": {
+			"begin": "\"",
+			"end": "\"",
+			"name": "string.quoted.double.tcl",
+			"patterns": [
+				{ "match": "\\\\.", "name": "constant.character.escape.tcl" },
+				{ "include": "#variable" },
+				{ "include": "#substitution" }
+			]
+		},
+		"substitution": {
+			"begin": "\\[",
+			"end": "\\]",
+			"beginCaptures": { "0": { "name": "punctuation.section.embedded.begin.tcl" } },
+			"endCaptures": { "0": { "name": "punctuation.section.embedded.end.tcl" } },
+			"patterns": [{ "include": "#command" }]
+		},
+		"braces": {
+			"begin": "\\{",
+			"end": "\\}",
+			"patterns": [{ "include": "#comment" }, { "include": "#command" }]
+		}
+	}
+}

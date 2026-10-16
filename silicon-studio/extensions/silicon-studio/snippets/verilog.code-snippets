@@ -1,0 +1,167 @@
+{
+  "Module": {
+    "prefix": "module",
+    "description": "Module with clock, reset and one output",
+    "body": [
+      "module ${1:${TM_FILENAME_BASE}} (",
+      "\tinput  wire       ${2:clk},",
+      "\tinput  wire       ${3:rst_n},",
+      "\toutput reg  [7:0] ${4:q}",
+      ");",
+      "\t$0",
+      "endmodule"
+    ]
+  },
+  "Parameterized module": {
+    "prefix": "modparam",
+    "description": "Module with a WIDTH parameter",
+    "body": [
+      "module ${1:${TM_FILENAME_BASE}} #(",
+      "\tparameter ${2:WIDTH} = ${3:8}",
+      ") (",
+      "\tinput  wire              clk,",
+      "\tinput  wire              rst_n,",
+      "\tinput  wire [${2}-1:0] ${4:d},",
+      "\toutput reg  [${2}-1:0] ${5:q}",
+      ");",
+      "\t$0",
+      "endmodule"
+    ]
+  },
+  "always @(posedge clk)": {
+    "prefix": "always",
+    "description": "Clocked always block",
+    "body": [
+      "always @(posedge ${1:clk}) begin",
+      "\t$0",
+      "end"
+    ]
+  },
+  "always_ff": {
+    "prefix": "always_ff",
+    "description": "SystemVerilog flip-flop block with async active-low reset",
+    "body": [
+      "always_ff @(posedge ${1:clk} or negedge ${2:rst_n}) begin",
+      "\tif (!${2}) begin",
+      "\t\t${3:q} <= '0;",
+      "\tend else begin",
+      "\t\t${3} <= ${4:d};",
+      "\tend",
+      "end"
+    ]
+  },
+  "always_comb": {
+    "prefix": "always_comb",
+    "description": "SystemVerilog combinational block",
+    "body": [
+      "always_comb begin",
+      "\t$0",
+      "end"
+    ]
+  },
+  "initial": {
+    "prefix": "initial",
+    "description": "Initial block",
+    "body": [
+      "initial begin",
+      "\t$0",
+      "end"
+    ]
+  },
+  "case": {
+    "prefix": "case",
+    "description": "Case statement with default",
+    "body": [
+      "case (${1:sel})",
+      "\t${2:2'd0}: ${3};",
+      "\tdefault: ${4};",
+      "endcase"
+    ]
+  },
+  "generate for": {
+    "prefix": "genfor",
+    "description": "Generate loop",
+    "body": [
+      "genvar ${1:i};",
+      "generate",
+      "\tfor (${1} = 0; ${1} < ${2:N}; ${1} = ${1} + 1) begin : ${3:gen_loop}",
+      "\t\t$0",
+      "\tend",
+      "endgenerate"
+    ]
+  },
+  "Self-checking testbench": {
+    "prefix": "testbench",
+    "description": "Testbench: clock, reset, VCD dump, check task, PASS/FAIL, timeout",
+    "body": [
+      "`timescale 1ns/1ps",
+      "",
+      "module ${1:${TM_FILENAME_BASE}};",
+      "\treg clk = 1'b0;",
+      "\treg rst_n = 1'b0;",
+      "\tinteger errors = 0;",
+      "\twire [7:0] ${4:q};",
+      "",
+      "\t${2:dut} u_dut (",
+      "\t\t.clk(clk),",
+      "\t\t.rst_n(rst_n),",
+      "\t\t.q(${4})",
+      "\t);",
+      "",
+      "\talways #${3:5} clk = ~clk;",
+      "",
+      "\ttask check(input [63:0] got, input [63:0] exp);",
+      "\t\tif (got !== exp) begin",
+      "\t\t\terrors = errors + 1;",
+      "\t\t\t\\$display(\"FAIL @%0t: got %0h expected %0h\", \\$time, got, exp);",
+      "\t\tend",
+      "\tendtask",
+      "",
+      "\tinitial begin",
+      "\t\t\\$dumpfile(\"${1}.vcd\");",
+      "\t\t\\$dumpvars(0, ${1});",
+      "\t\trepeat (2) @(posedge clk);",
+      "\t\trst_n = 1'b1;",
+      "\t\t@(posedge clk);",
+      "\t\t$0",
+      "\t\tcheck(${4}, ${5:8'd0});",
+      "\t\tif (errors == 0) \\$display(\"PASS\");",
+      "\t\telse \\$display(\"FAIL: %0d error(s)\", errors);",
+      "\t\t\\$finish;",
+      "\tend",
+      "",
+      "\tinitial begin",
+      "\t\t#${6:100000};",
+      "\t\t\\$display(\"FAIL: timeout\");",
+      "\t\t\\$finish;",
+      "\tend",
+      "endmodule"
+    ]
+  },
+  "FSM": {
+    "prefix": "fsm",
+    "description": "Two-process state machine skeleton",
+    "body": [
+      "localparam [1:0] ${1:IDLE} = 2'd0,",
+      "                 ${2:RUN}  = 2'd1,",
+      "                 ${3:DONE} = 2'd2;",
+      "",
+      "reg [1:0] state, next_state;",
+      "",
+      "always @(posedge ${4:clk} or negedge ${5:rst_n}) begin",
+      "\tif (!${5}) state <= ${1};",
+      "\telse state <= next_state;",
+      "end",
+      "",
+      "always @(*) begin",
+      "\tnext_state = state;",
+      "\tcase (state)",
+      "\t\t${1}: if (${6:start}) next_state = ${2};",
+      "\t\t${2}: if (${7:finish}) next_state = ${3};",
+      "\t\t${3}: next_state = ${1};",
+      "\t\tdefault: next_state = ${1};",
+      "\tendcase",
+      "end"
+    ]
+  }
+}

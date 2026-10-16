@@ -1,0 +1,86 @@
+/* Silicon Studio - netlist schematic webview. Colours come only from VS Code theme variables. */
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-editor-foreground);
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+}
+
+.ss-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--vscode-panel-border, transparent);
+}
+
+.ss-title {
+	flex: 1;
+	min-width: 0;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ss-btn {
+	font: inherit;
+	padding: 2px 8px;
+	border-radius: 2px;
+	border: 1px solid var(--vscode-button-border, transparent);
+	background: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+	cursor: pointer;
+}
+.ss-btn:hover:not(:disabled) { background: var(--vscode-button-secondaryHoverBackground); }
+.ss-btn:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: 1px; }
+.ss-btn:disabled { opacity: 0.5; cursor: default; }
+
+.ss-stage {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	cursor: grab;
+	touch-action: none;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-editor-foreground);
+}
+.ss-stage:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
+.ss-stage.ss-panning { cursor: grabbing; }
+.ss-stage > svg { display: block; width: 100%; height: 100%; user-select: none; }
+
+.ss-info {
+	padding: 3px 8px;
+	border-top: 1px solid var(--vscode-panel-border, transparent);
+	font-family: var(--vscode-editor-font-family);
+	color: var(--vscode-descriptionForeground);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.ss-info.ss-error { color: var(--vscode-errorForeground); }
+
+/* Hit targets: wide invisible copies of wires; whole cell bodies clickable despite fill:none. */
+.ss-stage .ss-hit { stroke: transparent; stroke-width: 8px; pointer-events: stroke; cursor: pointer; }
+.ss-stage g[id^="cell_"] { cursor: pointer; }
+.ss-stage g[id^="cell_"] :is(rect, path, circle, ellipse, polygon) { pointer-events: visible; }
+
+/* Selected cell: the drawing uses currentColor, so recolouring the group recolours outline and labels. */
+.ss-stage .ss-sel { color: var(--vscode-focusBorder); }
+.ss-stage .ss-sel :not(text) { stroke: currentColor; stroke-width: 2px; }
+.ss-stage .ss-sel > :is(rect, path, circle, ellipse, polygon):not(.splitjoinBody) {
+	fill: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+/* Highlighted net: every segment and junction of the clicked wire. */
+.ss-stage .ss-hl { color: var(--vscode-charts-orange); stroke: currentColor; stroke-width: 2.5px; }

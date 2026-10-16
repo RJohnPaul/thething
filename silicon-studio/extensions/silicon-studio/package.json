@@ -1,0 +1,798 @@
+{
+  "name": "silicon-studio",
+  "displayName": "Silicon Studio",
+  "description": "Digital design flow: Verilog editing, linting, simulation, waveforms and Yosys + ABC synthesis to a gate-level netlist.",
+  "version": "0.1.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "main": "./out/extension",
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/silicon.json",
+    "onLanguage:verilog",
+    "onLanguage:systemverilog"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Silicon Studio runs EDA tools on the files in this workspace."
+    }
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "verilog",
+        "aliases": [
+          "Verilog",
+          "verilog"
+        ],
+        "extensions": [
+          ".v",
+          ".vh",
+          ".vl"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "systemverilog",
+        "aliases": [
+          "SystemVerilog",
+          "systemverilog"
+        ],
+        "extensions": [
+          ".sv",
+          ".svh"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "tcl",
+        "aliases": [
+          "Tcl",
+          "SDC"
+        ],
+        "extensions": [
+          ".tcl",
+          ".sdc",
+          ".xdc",
+          ".tk"
+        ],
+        "configuration": "./syntaxes/tcl-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "verilog",
+        "scopeName": "source.verilog",
+        "path": "./syntaxes/verilog.tmLanguage.json"
+      },
+      {
+        "language": "systemverilog",
+        "scopeName": "source.systemverilog",
+        "path": "./syntaxes/systemverilog.tmLanguage.json"
+      },
+      {
+        "language": "tcl",
+        "scopeName": "source.tcl",
+        "path": "./syntaxes/tcl.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "verilog",
+        "path": "./snippets/verilog.code-snippets"
+      },
+      {
+        "language": "systemverilog",
+        "path": "./snippets/verilog.code-snippets"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "silicon.json",
+        "url": "./schemas/silicon.schema.json"
+      }
+    ],
+    "configuration": {
+      "title": "Silicon Studio",
+      "properties": {
+        "siliconStudio.yosys.engine": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "native",
+            "wasm"
+          ],
+          "enumDescriptions": [
+            "Use the native yosys binary when it is installed, otherwise the bundled WebAssembly build.",
+            "Always use the native yosys binary.",
+            "Always use the bundled WebAssembly build (YoWASP); no native installation needed."
+          ],
+          "default": "auto",
+          "description": "Which Yosys engine runs synthesis, elaboration and equivalence checks."
+        },
+        "siliconStudio.tools.yosysPath": {
+          "type": "string",
+          "default": "yosys",
+          "description": "Path to the native yosys executable."
+        },
+        "siliconStudio.tools.iverilogPath": {
+          "type": "string",
+          "default": "iverilog",
+          "description": "Path to the Icarus Verilog compiler (iverilog)."
+        },
+        "siliconStudio.tools.vvpPath": {
+          "type": "string",
+          "default": "vvp",
+          "description": "Path to the Icarus Verilog runtime (vvp)."
+        },
+        "siliconStudio.tools.verilatorPath": {
+          "type": "string",
+          "default": "verilator",
+          "description": "Path to the Verilator executable (used for linting)."
+        },
+        "siliconStudio.lintOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Lint the project whenever a Verilog/SystemVerilog file in it is saved."
+        },
+        "siliconStudio.jobTimeoutSeconds": {
+          "type": "number",
+          "default": 600,
+          "minimum": 5,
+          "description": "Maximum run time for a single tool invocation (simulation uses testbench.timeoutSeconds from silicon.json)."
+        },
+        "siliconStudio.openWaveformAfterSimulation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open the waveform viewer when a simulation produces a VCD file."
+        },
+        "siliconStudio.tools.openroadPath": {
+          "type": "string",
+          "default": "openroad",
+          "description": "Path to the OpenROAD executable (place and route, timing, power)."
+        },
+        "siliconStudio.tools.klayoutPython": {
+          "type": "string",
+          "default": "",
+          "description": "Python interpreter with the klayout module (pip install klayout), used to merge the routed DEF with cell GDS into GDSII. Empty = detect."
+        },
+        "siliconStudio.physical.threads": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Threads OpenROAD may use (0 = all cores)."
+        },
+        "siliconStudio.physical.stageTimeoutSeconds": {
+          "type": "number",
+          "default": 3600,
+          "minimum": 30,
+          "description": "Maximum run time of one place-and-route stage."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "siliconStudio.newProject",
+        "title": "New Project…",
+        "category": "Silicon Studio",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "siliconStudio.lint",
+        "title": "Run Lint",
+        "category": "Silicon Studio",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "siliconStudio.simulate",
+        "title": "Run Simulation",
+        "category": "Silicon Studio",
+        "icon": "$(play)"
+      },
+      {
+        "command": "siliconStudio.synthesize",
+        "title": "Synthesize (Yosys + ABC)",
+        "category": "Silicon Studio",
+        "icon": "$(circuit-board)"
+      },
+      {
+        "command": "siliconStudio.equivalence",
+        "title": "Check Equivalence (RTL vs Netlist)",
+        "category": "Silicon Studio",
+        "icon": "$(verified)"
+      },
+      {
+        "command": "siliconStudio.runFlow",
+        "title": "Run Flow (Lint → Simulate → Synthesize → Equivalence)",
+        "category": "Silicon Studio",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "siliconStudio.showWaveform",
+        "title": "Open Waveform",
+        "category": "Silicon Studio",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "siliconStudio.showSchematic",
+        "title": "Open Schematic",
+        "category": "Silicon Studio",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "siliconStudio.showReport",
+        "title": "Open Synthesis Report",
+        "category": "Silicon Studio",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "siliconStudio.openNetlist",
+        "title": "Open Gate-Level Netlist",
+        "category": "Silicon Studio",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "siliconStudio.compareRuns",
+        "title": "Compare Runs…",
+        "category": "Silicon Studio",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "siliconStudio.reproduceRun",
+        "title": "Reproduce Run",
+        "category": "Silicon Studio",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "siliconStudio.openRunLog",
+        "title": "Open Run Log",
+        "category": "Silicon Studio",
+        "icon": "$(output)"
+      },
+      {
+        "command": "siliconStudio.revealRun",
+        "title": "Reveal Run Folder",
+        "category": "Silicon Studio",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "siliconStudio.exportBundle",
+        "title": "Export Handoff Bundle",
+        "category": "Silicon Studio",
+        "icon": "$(package)"
+      },
+      {
+        "command": "siliconStudio.selectTop",
+        "title": "Select Top Module…",
+        "category": "Silicon Studio",
+        "icon": "$(symbol-module)"
+      },
+      {
+        "command": "siliconStudio.validateConfig",
+        "title": "Validate Project Configuration",
+        "category": "Silicon Studio",
+        "icon": "$(pass)"
+      },
+      {
+        "command": "siliconStudio.toolStatus",
+        "title": "Show Engine Status",
+        "category": "Silicon Studio",
+        "icon": "$(server-environment)"
+      },
+      {
+        "command": "siliconStudio.cancelJob",
+        "title": "Cancel Running Job",
+        "category": "Silicon Studio",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "siliconStudio.refresh",
+        "title": "Refresh",
+        "category": "Silicon Studio",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "siliconStudio.openProjectConfig",
+        "title": "Open Project Configuration",
+        "category": "Silicon Studio",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "siliconStudio.pnr.run",
+        "title": "Run Place & Route (Netlist → GDSII)",
+        "category": "Silicon Studio",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "siliconStudio.pnr.runTo",
+        "title": "Run Place & Route Through Stage…",
+        "category": "Silicon Studio",
+        "icon": "$(debug-step-into)"
+      },
+      {
+        "command": "siliconStudio.pnr.resume",
+        "title": "Re-run Place & Route From Stage…",
+        "category": "Silicon Studio",
+        "icon": "$(debug-restart)"
+      },
+      {
+        "command": "siliconStudio.pnr.explore",
+        "title": "Explore Floorplan Scenarios…",
+        "category": "Silicon Studio",
+        "icon": "$(layout)"
+      },
+      {
+        "command": "siliconStudio.pnr.selectScenario",
+        "title": "Select Floorplan Scenario…",
+        "category": "Silicon Studio",
+        "icon": "$(settings)"
+      },
+      {
+        "command": "siliconStudio.pnr.layout",
+        "title": "Open Layout Viewer",
+        "category": "Silicon Studio",
+        "icon": "$(layout-panel-left)"
+      },
+      {
+        "command": "siliconStudio.pnr.report",
+        "title": "Open Physical Design Report",
+        "category": "Silicon Studio",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "siliconStudio.pnr.gui",
+        "title": "Open in OpenROAD GUI",
+        "category": "Silicon Studio",
+        "icon": "$(window)"
+      },
+      {
+        "command": "siliconStudio.pnr.revealGds",
+        "title": "Reveal GDSII File",
+        "category": "Silicon Studio",
+        "icon": "$(file-binary)"
+      },
+      {
+        "command": "siliconStudio.shell.dc",
+        "title": "Open DC Shell",
+        "category": "Silicon Studio",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "siliconStudio.shell.icc2",
+        "title": "Open ICC2 Shell",
+        "category": "Silicon Studio",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "siliconStudio.shell.pt",
+        "title": "Open PrimeTime Shell",
+        "category": "Silicon Studio",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "siliconStudio.shell.runScript",
+        "title": "Run Tcl Script in Shell…",
+        "category": "Silicon Studio",
+        "icon": "$(play)"
+      },
+      {
+        "command": "siliconStudio.setupKlayout",
+        "title": "Set Up GDSII Export (KLayout)",
+        "category": "Silicon Studio",
+        "icon": "$(cloud-download)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "siliconStudio",
+          "title": "Silicon Studio",
+          "icon": "resources/chip.svg"
+        }
+      ]
+    },
+    "views": {
+      "siliconStudio": [
+        {
+          "id": "siliconStudio.flow",
+          "name": "Flow"
+        },
+        {
+          "id": "siliconStudio.hierarchy",
+          "name": "Design Hierarchy"
+        },
+        {
+          "id": "siliconStudio.runs",
+          "name": "Run History"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "siliconStudio.flow",
+        "contents": "No Silicon Studio project (silicon.json) in this workspace.\n[New Project](command:siliconStudio.newProject)\n[Open Folder](command:workbench.action.files.openFolder)",
+        "when": "!siliconStudio.hasProject"
+      },
+      {
+        "view": "siliconStudio.hierarchy",
+        "contents": "Run lint or synthesis to elaborate the design hierarchy.\n[Run Lint](command:siliconStudio.lint)",
+        "when": "siliconStudio.hasProject"
+      },
+      {
+        "view": "siliconStudio.runs",
+        "contents": "No runs yet. Every run records a snapshot of its inputs, tool versions and outputs here.",
+        "when": "siliconStudio.hasProject"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "siliconStudio.runFlow",
+          "when": "view == siliconStudio.flow && siliconStudio.hasProject",
+          "group": "navigation@1"
+        },
+        {
+          "command": "siliconStudio.exportBundle",
+          "when": "view == siliconStudio.flow && siliconStudio.hasProject",
+          "group": "navigation@2"
+        },
+        {
+          "command": "siliconStudio.openProjectConfig",
+          "when": "view == siliconStudio.flow && siliconStudio.hasProject",
+          "group": "navigation@3"
+        },
+        {
+          "command": "siliconStudio.refresh",
+          "when": "view == siliconStudio.flow || view == siliconStudio.runs || view == siliconStudio.hierarchy",
+          "group": "navigation@9"
+        },
+        {
+          "command": "siliconStudio.compareRuns",
+          "when": "view == siliconStudio.runs",
+          "group": "navigation@1"
+        },
+        {
+          "command": "siliconStudio.toolStatus",
+          "when": "view == siliconStudio.flow",
+          "group": "more@1"
+        },
+        {
+          "command": "siliconStudio.newProject",
+          "when": "view == siliconStudio.flow",
+          "group": "more@2"
+        },
+        {
+          "command": "siliconStudio.selectTop",
+          "when": "view == siliconStudio.hierarchy && siliconStudio.hasProject",
+          "group": "navigation@1"
+        },
+        {
+          "command": "siliconStudio.pnr.run",
+          "when": "view == siliconStudio.flow && siliconStudio.hasProject",
+          "group": "navigation@2"
+        },
+        {
+          "command": "siliconStudio.shell.dc",
+          "when": "view == siliconStudio.flow",
+          "group": "shells@1"
+        },
+        {
+          "command": "siliconStudio.shell.icc2",
+          "when": "view == siliconStudio.flow",
+          "group": "shells@2"
+        },
+        {
+          "command": "siliconStudio.shell.pt",
+          "when": "view == siliconStudio.flow",
+          "group": "shells@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "siliconStudio.lint",
+          "when": "view == siliconStudio.flow && viewItem =~ /^step\\.lint/",
+          "group": "inline@1"
+        },
+        {
+          "command": "siliconStudio.simulate",
+          "when": "view == siliconStudio.flow && viewItem =~ /^step\\.sim/",
+          "group": "inline@1"
+        },
+        {
+          "command": "siliconStudio.showWaveform",
+          "when": "view == siliconStudio.flow && viewItem == step.sim.hasRun",
+          "group": "inline@2"
+        },
+        {
+          "command": "siliconStudio.synthesize",
+          "when": "view == siliconStudio.flow && viewItem =~ /^step\\.synth/",
+          "group": "inline@1"
+        },
+        {
+          "command": "siliconStudio.equivalence",
+          "when": "view == siliconStudio.flow && viewItem =~ /^step\\.equiv/",
+          "group": "inline@1"
+        },
+        {
+          "command": "siliconStudio.exportBundle",
+          "when": "view == siliconStudio.flow && viewItem =~ /^step\\.export/",
+          "group": "inline@1"
+        },
+        {
+          "command": "siliconStudio.openRunLog",
+          "when": "view == siliconStudio.flow && viewItem =~ /\\.hasRun$/",
+          "group": "1_run@1"
+        },
+        {
+          "command": "siliconStudio.reproduceRun",
+          "when": "view == siliconStudio.runs && viewItem =~ /^run\\./",
+          "group": "inline@1"
+        },
+        {
+          "command": "siliconStudio.openRunLog",
+          "when": "view == siliconStudio.runs && viewItem =~ /^run\\./",
+          "group": "1_open@1"
+        },
+        {
+          "command": "siliconStudio.showReport",
+          "when": "view == siliconStudio.runs && viewItem == run.synth",
+          "group": "1_open@2"
+        },
+        {
+          "command": "siliconStudio.showSchematic",
+          "when": "view == siliconStudio.runs && viewItem == run.synth",
+          "group": "1_open@3"
+        },
+        {
+          "command": "siliconStudio.openNetlist",
+          "when": "view == siliconStudio.runs && viewItem == run.synth",
+          "group": "1_open@4"
+        },
+        {
+          "command": "siliconStudio.showWaveform",
+          "when": "view == siliconStudio.runs && viewItem == run.sim",
+          "group": "1_open@2"
+        },
+        {
+          "command": "siliconStudio.compareRuns",
+          "when": "view == siliconStudio.runs && viewItem =~ /^run\\./",
+          "group": "2_compare@1"
+        },
+        {
+          "command": "siliconStudio.reproduceRun",
+          "when": "view == siliconStudio.runs && viewItem =~ /^run\\./",
+          "group": "2_compare@2"
+        },
+        {
+          "command": "siliconStudio.revealRun",
+          "when": "view == siliconStudio.runs && viewItem =~ /^run\\./",
+          "group": "3_files@1"
+        },
+        {
+          "command": "siliconStudio.pnr.runTo",
+          "when": "view == siliconStudio.flow && viewItem =~ /^pnrstage/",
+          "group": "inline@1"
+        },
+        {
+          "command": "siliconStudio.pnr.layout",
+          "when": "view == siliconStudio.flow && viewItem == pnrstage.hasRun",
+          "group": "inline@2"
+        },
+        {
+          "command": "siliconStudio.pnr.runTo",
+          "when": "view == siliconStudio.flow && viewItem =~ /^pnrstage/",
+          "group": "1_run@1"
+        },
+        {
+          "command": "siliconStudio.pnr.resume",
+          "when": "view == siliconStudio.flow && viewItem =~ /^pnrstage/",
+          "group": "1_run@2"
+        },
+        {
+          "command": "siliconStudio.pnr.gui",
+          "when": "view == siliconStudio.flow && viewItem == pnrstage.hasRun",
+          "group": "2_open@1"
+        },
+        {
+          "command": "siliconStudio.pnr.layout",
+          "when": "view == siliconStudio.runs && viewItem == run.pnr",
+          "group": "1_open@2"
+        },
+        {
+          "command": "siliconStudio.pnr.report",
+          "when": "view == siliconStudio.runs && viewItem == run.pnr",
+          "group": "1_open@3"
+        },
+        {
+          "command": "siliconStudio.pnr.gui",
+          "when": "view == siliconStudio.runs && viewItem == run.pnr",
+          "group": "1_open@4"
+        },
+        {
+          "command": "siliconStudio.pnr.revealGds",
+          "when": "view == siliconStudio.runs && viewItem == run.pnr",
+          "group": "3_files@2"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "siliconStudio.simulate",
+          "when": "(resourceLangId == verilog || resourceLangId == systemverilog) && siliconStudio.hasProject",
+          "group": "navigation@1"
+        },
+        {
+          "command": "siliconStudio.synthesize",
+          "when": "(resourceLangId == verilog || resourceLangId == systemverilog) && siliconStudio.hasProject",
+          "group": "navigation@2"
+        },
+        {
+          "command": "siliconStudio.shell.runScript",
+          "when": "resourceLangId == tcl",
+          "group": "navigation@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "siliconStudio.reproduceRun",
+          "when": "siliconStudio.hasProject"
+        },
+        {
+          "command": "siliconStudio.revealRun",
+          "when": "false"
+        },
+        {
+          "command": "siliconStudio.openRunLog",
+          "when": "siliconStudio.hasProject"
+        },
+        {
+          "command": "siliconStudio.cancelJob",
+          "when": "siliconStudio.jobRunning"
+        },
+        {
+          "command": "siliconStudio.refresh",
+          "when": "false"
+        },
+        {
+          "command": "siliconStudio.pnr.runTo",
+          "when": "siliconStudio.hasProject"
+        },
+        {
+          "command": "siliconStudio.pnr.resume",
+          "when": "siliconStudio.hasProject"
+        },
+        {
+          "command": "siliconStudio.pnr.layout",
+          "when": "siliconStudio.hasProject"
+        },
+        {
+          "command": "siliconStudio.pnr.gui",
+          "when": "siliconStudio.hasProject"
+        },
+        {
+          "command": "siliconStudio.shell.runScript",
+          "when": "resourceLangId == tcl"
+        }
+      ]
+    },
+    "walkthroughs": [
+      {
+        "id": "siliconStudio.gettingStarted",
+        "title": "Get Started with Silicon Studio",
+        "description": "Go from Verilog to a synthesized gate-level netlist with Yosys.",
+        "steps": [
+          {
+            "id": "newProject",
+            "title": "Create a project",
+            "description": "Scaffold a multi-file Verilog project with a self-checking testbench and a silicon.json configuration.\n[New Project](command:siliconStudio.newProject)",
+            "media": {
+              "markdown": "walkthroughs/project.md"
+            },
+            "completionEvents": [
+              "onCommand:siliconStudio.newProject"
+            ]
+          },
+          {
+            "id": "lint",
+            "title": "Lint the RTL",
+            "description": "Verilator (or Icarus / Yosys) checks syntax, widths and latches; problems appear with file and line.\n[Run Lint](command:siliconStudio.lint)",
+            "media": {
+              "markdown": "walkthroughs/lint.md"
+            },
+            "completionEvents": [
+              "onCommand:siliconStudio.lint"
+            ]
+          },
+          {
+            "id": "simulate",
+            "title": "Simulate and inspect waveforms",
+            "description": "Compile the testbench with Icarus Verilog, read its PASS/FAIL verdict and browse the VCD.\n[Run Simulation](command:siliconStudio.simulate)",
+            "media": {
+              "markdown": "walkthroughs/simulate.md"
+            },
+            "completionEvents": [
+              "onCommand:siliconStudio.simulate"
+            ]
+          },
+          {
+            "id": "synthesize",
+            "title": "Synthesize with Yosys + ABC",
+            "description": "Elaborate, optimize and map the design, then inspect the netlist, schematic and cell statistics.\n[Synthesize](command:siliconStudio.synthesize)",
+            "media": {
+              "markdown": "walkthroughs/synthesize.md"
+            },
+            "completionEvents": [
+              "onCommand:siliconStudio.synthesize"
+            ]
+          },
+          {
+            "id": "placeAndRoute",
+            "title": "Place and route to GDSII",
+            "description": "OpenROAD floorplans, builds the power grid, places, synthesizes the clock tree, routes and writes GDSII. Compare floorplan scenarios side by side.\n[Run Place & Route](command:siliconStudio.pnr.run)\n[Explore Scenarios](command:siliconStudio.pnr.explore)",
+            "media": {
+              "markdown": "walkthroughs/physical.md"
+            },
+            "completionEvents": [
+              "onCommand:siliconStudio.pnr.run"
+            ]
+          },
+          {
+            "id": "export",
+            "title": "Verify and export",
+            "description": "Prove the netlist equivalent to the RTL, then export a handoff bundle with checksums and provenance.\n[Check Equivalence](command:siliconStudio.equivalence)\n[Export Bundle](command:siliconStudio.exportBundle)",
+            "media": {
+              "markdown": "walkthroughs/export.md"
+            },
+            "completionEvents": [
+              "onCommand:siliconStudio.exportBundle"
+            ]
+          }
+        ]
+      }
+    ],
+    "terminal": {
+      "profiles": [
+        {
+          "id": "siliconStudio.dcShell",
+          "title": "DC Shell (Silicon Studio)",
+          "icon": "circuit-board"
+        },
+        {
+          "id": "siliconStudio.icc2Shell",
+          "title": "ICC2 Shell (Silicon Studio)",
+          "icon": "layout"
+        },
+        {
+          "id": "siliconStudio.ptShell",
+          "title": "PrimeTime Shell (Silicon Studio)",
+          "icon": "watch"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "gulp compile-extension:silicon-studio",
+    "watch": "gulp watch-extension:silicon-studio",
+    "test": "node --test \"test/*.test.*\""
+  },
+  "dependencies": {
+    "@yowasp/yosys": "0.68.1207",
+    "netlistsvg": "^1.0.2",
+    "yazl": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.x",
+    "@types/yazl": "^3.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
+}

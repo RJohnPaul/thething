@@ -1,0 +1,404 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Silicon Studio project",
+	"description": "Configuration of a Silicon Studio digital design project.",
+	"type": "object",
+	"required": [
+		"name",
+		"top",
+		"sources"
+	],
+	"additionalProperties": false,
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"id": {
+			"type": "string",
+			"description": "Unique project identifier (generated automatically)."
+		},
+		"name": {
+			"type": "string",
+			"description": "Project name."
+		},
+		"top": {
+			"type": "string",
+			"pattern": "^[A-Za-z_][A-Za-z0-9_$]*$",
+			"description": "Top-level module for linting, synthesis and equivalence checking."
+		},
+		"sources": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			},
+			"description": "RTL files, folders (all .v/.sv inside) or globs such as \"rtl/**/*.sv\", relative to this file."
+		},
+		"includeDirs": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			},
+			"description": "Extra `include search directories. Folders that contain sources are searched automatically."
+		},
+		"defines": {
+			"type": "object",
+			"additionalProperties": {
+				"type": [
+					"string",
+					"number",
+					"boolean"
+				]
+			},
+			"description": "Preprocessor macros (`define) passed to every tool. true defines without a value, false omits the macro."
+		},
+		"parameters": {
+			"type": "object",
+			"additionalProperties": {
+				"type": [
+					"string",
+					"number"
+				]
+			},
+			"description": "Parameter overrides for the top module (lint, synthesis and equivalence)."
+		},
+		"testbench": {
+			"type": "object",
+			"required": [
+				"sources",
+				"top"
+			],
+			"additionalProperties": false,
+			"properties": {
+				"sources": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"description": "Testbench files or folders."
+				},
+				"top": {
+					"type": "string",
+					"description": "Testbench top module."
+				},
+				"timeoutSeconds": {
+					"type": "number",
+					"minimum": 1,
+					"default": 120,
+					"description": "Simulation is stopped after this many seconds."
+				},
+				"plusargs": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"description": "Runtime +plusargs passed to the simulation."
+				}
+			}
+		},
+		"lint": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"engine": {
+					"enum": [
+						"auto",
+						"verilator",
+						"iverilog",
+						"yosys"
+					],
+					"default": "auto",
+					"description": "Lint engine; auto prefers Verilator, then Icarus Verilog. Yosys elaboration checks always run when Yosys is available."
+				},
+				"severity": {
+					"type": "object",
+					"additionalProperties": {
+						"enum": [
+							"error",
+							"warning",
+							"info",
+							"off"
+						]
+					},
+					"description": "Override the severity of diagnostics by code, e.g. { \"UNUSEDSIGNAL\": \"off\", \"WIDTHTRUNC\": \"error\" }."
+				}
+			}
+		},
+		"synthesis": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"flatten": {
+					"type": "boolean",
+					"default": true,
+					"description": "Flatten the hierarchy during synthesis."
+				},
+				"abc": {
+					"type": "boolean",
+					"default": true,
+					"description": "Run ABC logic optimization and mapping."
+				},
+				"liberty": {
+					"type": "string",
+					"description": "Liberty (.lib) standard-cell library for technology mapping and area. Without it, only generic gate statistics are reported."
+				},
+				"extraCommands": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"description": "Additional Yosys commands run after mapping (shell and script commands are not allowed)."
+				}
+			}
+		},
+		"constraints": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			},
+			"description": "SDC timing constraint files (included in snapshots and exports)."
+		},
+		"pdk": {
+			"type": "object",
+			"required": [
+				"name"
+			],
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"version": {
+					"type": "string"
+				},
+				"source": {
+					"type": "string",
+					"description": "Where the library data comes from (provenance)."
+				}
+			}
+		},
+		"equivalence": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "Equivalence checking (RTL vs synthesized netlist).",
+			"properties": {
+				"reset": {
+					"type": "string",
+					"description": "Reset input asserted in the first cycle of the bounded counterexample search. Default: a port named rst, reset, rst_n, ..."
+				},
+				"resetActiveLow": {
+					"type": "boolean",
+					"description": "Whether the reset is active low. Default: true for names ending in _n/n or starting with n."
+				}
+			}
+		},
+		"physical": {
+			"type": "object",
+			"required": [
+				"platform"
+			],
+			"additionalProperties": false,
+			"description": "Physical implementation with OpenROAD (netlist -> GDSII).",
+			"properties": {
+				"platform": {
+					"enum": [
+						"nangate45",
+						"sky130hd"
+					],
+					"description": "Process platform: nangate45 (FreePDK45 + Nangate Open Cell Library) or sky130hd (SkyWater 130 nm high-density cells)."
+				},
+				"utilization": {
+					"type": "number",
+					"minimum": 1,
+					"maximum": 95,
+					"description": "Target core utilization in percent (cell area / core area). Ignored when dieArea is set."
+				},
+				"aspectRatio": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"description": "Core height / width (1 = square)."
+				},
+				"coreMargin": {
+					"type": "number",
+					"minimum": 0,
+					"description": "Space between core and die edge in microns."
+				},
+				"dieArea": {
+					"type": "array",
+					"items": {
+						"type": "number"
+					},
+					"minItems": 4,
+					"maxItems": 4,
+					"description": "Fixed die rectangle [x0, y0, x1, y1] in microns (overrides utilization)."
+				},
+				"coreArea": {
+					"type": "array",
+					"items": {
+						"type": "number"
+					},
+					"minItems": 4,
+					"maxItems": 4,
+					"description": "Fixed core rectangle [x0, y0, x1, y1] in microns, inside dieArea."
+				},
+				"placeDensity": {
+					"type": "number",
+					"exclusiveMinimum": 0,
+					"maximum": 1,
+					"description": "Global placement target density (default: platform value)."
+				},
+				"pinConstraints": {
+					"type": "array",
+					"description": "Place IO pins on a die side.",
+					"items": {
+						"type": "object",
+						"required": [
+							"side",
+							"pins"
+						],
+						"properties": {
+							"side": {
+								"enum": [
+									"left",
+									"right",
+									"top",
+									"bottom"
+								]
+							},
+							"pins": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"blockages": {
+					"type": "array",
+					"items": {
+						"type": "array",
+						"items": {
+							"type": "number"
+						},
+						"minItems": 4,
+						"maxItems": 4,
+						"description": "Placement blockage [x0, y0, x1, y1] in microns."
+					},
+					"description": "Areas where no standard cells may be placed."
+				},
+				"scenarios": {
+					"type": "array",
+					"description": "Named floorplan variants for \"Explore Floorplan Scenarios\"; each overrides the settings above.",
+					"items": {
+						"type": "object",
+						"required": [
+							"name"
+						],
+						"additionalProperties": false,
+						"properties": {
+							"name": {
+								"type": "string",
+								"pattern": "^[\\w.-]+$"
+							},
+							"utilization": {
+								"type": "number",
+								"minimum": 1,
+								"maximum": 95,
+								"description": "Target core utilization in percent (cell area / core area). Ignored when dieArea is set."
+							},
+							"aspectRatio": {
+								"type": "number",
+								"exclusiveMinimum": 0,
+								"description": "Core height / width (1 = square)."
+							},
+							"coreMargin": {
+								"type": "number",
+								"minimum": 0,
+								"description": "Space between core and die edge in microns."
+							},
+							"dieArea": {
+								"type": "array",
+								"items": {
+									"type": "number"
+								},
+								"minItems": 4,
+								"maxItems": 4,
+								"description": "Fixed die rectangle [x0, y0, x1, y1] in microns (overrides utilization)."
+							},
+							"coreArea": {
+								"type": "array",
+								"items": {
+									"type": "number"
+								},
+								"minItems": 4,
+								"maxItems": 4,
+								"description": "Fixed core rectangle [x0, y0, x1, y1] in microns, inside dieArea."
+							},
+							"placeDensity": {
+								"type": "number",
+								"exclusiveMinimum": 0,
+								"maximum": 1,
+								"description": "Global placement target density (default: platform value)."
+							},
+							"pinConstraints": {
+								"type": "array",
+								"description": "Place IO pins on a die side.",
+								"items": {
+									"type": "object",
+									"required": [
+										"side",
+										"pins"
+									],
+									"properties": {
+										"side": {
+											"enum": [
+												"left",
+												"right",
+												"top",
+												"bottom"
+											]
+										},
+										"pins": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										}
+									}
+								}
+							},
+							"blockages": {
+								"type": "array",
+								"items": {
+									"type": "array",
+									"items": {
+										"type": "number"
+									},
+									"minItems": 4,
+									"maxItems": 4,
+									"description": "Placement blockage [x0, y0, x1, y1] in microns."
+								},
+								"description": "Areas where no standard cells may be placed."
+							}
+						}
+					}
+				},
+				"activeScenario": {
+					"type": "string",
+					"description": "Scenario used by \"Run Place & Route\" (default: the settings above)."
+				},
+				"minRoutingLayer": {
+					"type": "string",
+					"description": "Lowest signal routing layer (default: platform)."
+				},
+				"maxRoutingLayer": {
+					"type": "string",
+					"description": "Highest signal routing layer (default: platform)."
+				},
+				"ctsBuffer": {
+					"type": "string",
+					"description": "Clock-tree buffer cell (default: platform)."
+				}
+			}
+		}
+	}
+}

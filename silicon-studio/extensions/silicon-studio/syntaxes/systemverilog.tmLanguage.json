@@ -1,0 +1,66 @@
+{
+  "name": "SystemVerilog",
+  "scopeName": "source.systemverilog",
+  "fileTypes": ["sv", "svh"],
+  "patterns": [
+    { "include": "#declarations" },
+    { "include": "#keywords" },
+    { "include": "source.verilog" }
+  ],
+  "repository": {
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(?:(virtual)\\s+)?(class)\\s+(?:(automatic|static)\\s+)?([a-zA-Z_][\\w$]*)",
+          "captures": {
+            "1": { "name": "storage.modifier.systemverilog" },
+            "2": { "name": "storage.type.declaration.systemverilog" },
+            "3": { "name": "storage.modifier.systemverilog" },
+            "4": { "name": "entity.name.type.class.systemverilog" }
+          }
+        },
+        {
+          "match": "\\b(interface|package|program|checker)\\s+(?!class\\b)(?:(automatic|static)\\s+)?([a-zA-Z_][\\w$]*)",
+          "captures": {
+            "1": { "name": "storage.type.declaration.systemverilog" },
+            "2": { "name": "storage.modifier.systemverilog" },
+            "3": { "name": "entity.name.type.module.systemverilog" }
+          }
+        },
+        {
+          "match": "\\b(extends|implements)\\s+([a-zA-Z_][\\w$]*)",
+          "captures": {
+            "1": { "name": "storage.modifier.systemverilog" },
+            "2": { "name": "entity.other.inherited-class.systemverilog" }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.systemverilog",
+          "match": "\\b(?:return|break|continue|do|foreach|unique|unique0|priority|randcase|randsequence|join_any|join_none|wait_order|iff)\\b"
+        },
+        {
+          "name": "storage.type.declaration.systemverilog",
+          "match": "\\b(?:class|endclass|interface|endinterface|package|endpackage|program|endprogram|checker|endchecker|clocking|endclocking|covergroup|endgroup|property|endproperty|sequence|endsequence|modport|typedef|constraint)\\b"
+        },
+        {
+          "name": "storage.type.systemverilog",
+          "match": "\\b(?:logic|bit|byte|int|shortint|longint|shortreal|string|chandle|void|enum|struct|union|untyped|interconnect)\\b"
+        },
+        {
+          "name": "storage.modifier.systemverilog",
+          "match": "\\b(?:const|ref|rand|randc|virtual|pure|extern|local|protected|packed|tagged|soft|context|static|automatic|var|extends|implements)\\b"
+        },
+        {
+          "name": "keyword.other.systemverilog",
+          "match": "\\b(?:always_comb|always_ff|always_latch|final|assert|assume|cover|expect|restrict|bind|alias|import|export|inside|dist|with|within|throughout|intersect|first_match|matches|implies|solve|before|accept_on|reject_on|sync_accept_on|sync_reject_on|eventually|s_eventually|s_always|nexttime|s_nexttime|until|s_until|until_with|s_until_with|strong|weak|global|let|bins|binsof|coverpoint|cross|ignore_bins|illegal_bins|wildcard|timeprecision|timeunit|forkjoin|type|nettype|new)\\b"
+        },
+        { "name": "variable.language.systemverilog", "match": "\\b(?:this|super)\\b" },
+        { "name": "constant.language.null.systemverilog", "match": "\\bnull\\b" }
+      ]
+    }
+  }
+}
