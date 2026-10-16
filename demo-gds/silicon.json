@@ -1,0 +1,72 @@
+{
+	"id": "90320a46-8449-4f77-aa42-662b0f04c953",
+	"name": "pwm",
+	"top": "pwm",
+	"sources": [
+		"rtl"
+	],
+	"includeDirs": [],
+	"defines": {},
+	"parameters": {
+		"WIDTH": 8
+	},
+	"testbench": {
+		"sources": [
+			"tb/pwm_tb.v"
+		],
+		"top": "pwm_tb",
+		"timeoutSeconds": 60
+	},
+	"lint": {
+		"engine": "auto",
+		"severity": {
+			"DECLFILENAME": "off"
+		}
+	},
+	"synthesis": {
+		"flatten": true,
+		"abc": true
+	},
+	"constraints": [
+		"constraints/pwm.sdc"
+	],
+	"physical": {
+		"platform": "nangate45",
+		"utilization": 30,
+		"aspectRatio": 1,
+		"coreMargin": 2,
+		"scenarios": [
+			{
+				"name": "util30-square",
+				"utilization": 30,
+				"aspectRatio": 1
+			},
+			{
+				"name": "util55-square",
+				"utilization": 55,
+				"aspectRatio": 1
+			},
+			{
+				"name": "util40-wide",
+				"utilization": 40,
+				"aspectRatio": 0.5,
+				"pinConstraints": [
+					{
+						"side": "left",
+						"pins": [
+							"clk",
+							"rst",
+							"en"
+						]
+					},
+					{
+						"side": "right",
+						"pins": [
+							"out"
+						]
+					}
+				]
+			}
+		]
+	}
+}

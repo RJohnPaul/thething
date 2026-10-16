@@ -1,0 +1,5 @@
+.DS_Store
+.tools/
+VSCode-darwin-arm64/
+dist/
+silicon-studio/

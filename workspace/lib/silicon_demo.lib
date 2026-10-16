@@ -1,0 +1,89 @@
+/*
+ * silicon_demo — a tiny DEMONSTRATION standard-cell library for Silicon Studio.
+ *
+ * FICTIONAL DATA: the areas below are illustrative unit values (roughly proportional to
+ * transistor count) and the library carries no timing or power tables. It is not derived
+ * from any foundry PDK and must not be used for signoff. Point "synthesis.liberty" in
+ * silicon.json at a real PDK library (e.g. sky130_fd_sc_hd__tt_025C_1v80.lib) for real numbers.
+ */
+library (silicon_demo) {
+  delay_model : table_lookup;
+  time_unit : "1ns";
+  voltage_unit : "1V";
+  current_unit : "1mA";
+  capacitive_load_unit (1, pf);
+  pulling_resistance_unit : "1kohm";
+  leakage_power_unit : "1nW";
+  nom_process : 1;
+  nom_temperature : 25;
+  nom_voltage : 1.8;
+
+  cell (INV_X1) {
+    area : 1.0;
+    pin (A) { direction : input; }
+    pin (Y) { direction : output; function : "A'"; }
+  }
+  cell (BUF_X1) {
+    area : 1.5;
+    pin (A) { direction : input; }
+    pin (Y) { direction : output; function : "A"; }
+  }
+  cell (NAND2_X1) {
+    area : 1.5;
+    pin (A) { direction : input; }
+    pin (B) { direction : input; }
+    pin (Y) { direction : output; function : "(A*B)'"; }
+  }
+  cell (NOR2_X1) {
+    area : 1.5;
+    pin (A) { direction : input; }
+    pin (B) { direction : input; }
+    pin (Y) { direction : output; function : "(A+B)'"; }
+  }
+  cell (AND2_X1) {
+    area : 2.0;
+    pin (A) { direction : input; }
+    pin (B) { direction : input; }
+    pin (Y) { direction : output; function : "(A*B)"; }
+  }
+  cell (OR2_X1) {
+    area : 2.0;
+    pin (A) { direction : input; }
+    pin (B) { direction : input; }
+    pin (Y) { direction : output; function : "(A+B)"; }
+  }
+  cell (XOR2_X1) {
+    area : 3.0;
+    pin (A) { direction : input; }
+    pin (B) { direction : input; }
+    pin (Y) { direction : output; function : "(A^B)"; }
+  }
+  cell (XNOR2_X1) {
+    area : 3.0;
+    pin (A) { direction : input; }
+    pin (B) { direction : input; }
+    pin (Y) { direction : output; function : "(A^B)'"; }
+  }
+  cell (MUX2_X1) {
+    area : 3.5;
+    pin (A) { direction : input; }
+    pin (B) { direction : input; }
+    pin (S) { direction : input; }
+    pin (Y) { direction : output; function : "((A*S')+(B*S))"; }
+  }
+  cell (DFF_X1) {
+    area : 6.0;
+    ff (IQ, IQN) { clocked_on : "C"; next_state : "D"; }
+    pin (C) { direction : input; clock : true; }
+    pin (D) { direction : input; }
+    pin (Q) { direction : output; function : "IQ"; }
+  }
+  cell (DFFR_X1) {
+    area : 7.0;
+    ff (IQ, IQN) { clocked_on : "C"; next_state : "D"; clear : "R"; }
+    pin (C) { direction : input; clock : true; }
+    pin (D) { direction : input; }
+    pin (R) { direction : input; }
+    pin (Q) { direction : output; function : "IQ"; }
+  }
+}

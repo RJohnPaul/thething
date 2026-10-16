@@ -1,0 +1,39 @@
+{
+	"id": "df7457af-e2d9-4c6e-b5a9-5fbbd5b8e4ba",
+	"name": "pwm",
+	"top": "pwm",
+	"sources": [
+		"rtl"
+	],
+	"includeDirs": [],
+	"defines": {},
+	"parameters": {
+		"WIDTH": 8
+	},
+	"testbench": {
+		"sources": [
+			"tb/pwm_tb.v"
+		],
+		"top": "pwm_tb",
+		"timeoutSeconds": 60
+	},
+	"lint": {
+		"engine": "auto",
+		"severity": {
+			"DECLFILENAME": "off"
+		}
+	},
+	"synthesis": {
+		"flatten": true,
+		"abc": true,
+		"liberty": "lib/silicon_demo.lib"
+	},
+	"constraints": [
+		"constraints/pwm.sdc"
+	],
+	"pdk": {
+		"name": "silicon_demo",
+		"version": "0.1",
+		"source": "Fictional demonstration library bundled with Silicon Studio (not foundry data)"
+	}
+}
